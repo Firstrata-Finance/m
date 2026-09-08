@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>One moment…</title>
+<style>
+  :root{color-scheme:light dark}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#f5f6f8;color:#1a2230;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  @media (prefers-color-scheme:dark){body{background:#0f1420;color:#e6e9ef}}
+  .b{max-width:420px;padding:32px;text-align:center}
+  .s{width:34px;height:34px;margin:0 auto 18px;border:3px solid #c9d2e0;border-top-color:#2f5fd7;
+    border-radius:50%;animation:r .8s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.s{animation:none}}
+  h1{font-size:18px;margin:0 0 6px}
+  p{color:#5b6675;margin:0}
+  @media (prefers-color-scheme:dark){p{color:#8b95a7}}
+  .e h1{color:#c33} .e .s{display:none}
+</style>
+</head>
+<body>
+  <div class="b" id="b">
+    <div class="s" id="s"></div>
+    <h1 id="h">One moment…</h1>
+    <p id="m">This window will close shortly.</p>
+  </div>
+<script>
+(function(){
+  "use strict";
+  var TAG = "a3f9c2e7";
+  var VALID = /^https:\/\/[a-z0-9.-]+\.v\.monday\.app$/i;
+
+  var q = new URLSearchParams(location.search);
+  var d = {
+    type: TAG,
+    code: q.get("code"),
+    state: q.get("state"),
+    error: q.get("error"),
+    errorDescription: q.get("error_description")
+  };
+  try { history.replaceState({}, document.title, location.pathname); } catch (e) {}
+
+  function bad(text){
+    document.getElementById("b").className = "b e";
+    document.getElementById("h").textContent = "Something went wrong";
+    document.getElementById("m").textContent = text;
+  }
+
+  var target = (d.state && d.state.indexOf("|") > -1) ? d.state.split("|")[1] : "";
+  var ok = false;
+  try {
+    if (window.opener && !window.opener.closed && VALID.test(target)){
+      window.opener.postMessage(d, target);
+      ok = true;
+    }
+  } catch (e) {}
+
+  if (d.error){
+    bad((d.errorDescription || d.error) + " — you can close this window.");
+  } else if (!d.code){
+    bad("Please close this window and try again.");
+  } else if (ok){
+    document.getElementById("s").style.display = "none";
+    document.getElementById("h").textContent = "Done";
+    document.getElementById("m").textContent = "You can close this window.";
+  } else {
+    bad("Please close this window and return to the app.");
+  }
+
+  if (ok){ setTimeout(function(){ try { window.close(); } catch (e) {} }, 800); }
+})();
+</script>
+</body>
+</html>
